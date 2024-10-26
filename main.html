@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>BASTARDOS</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            user-select: none;
+            position: relative;
+            touch-action: none;
+        }
+
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .background img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .touch-circle {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 5px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            box-sizing: border-box;
+            animation: pulse 1s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .title {
+            position: absolute;
+            font-size: 10vw;
+            color: #ffffff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3), 4px 4px 8px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 2s ease forwards, textGlow 3s ease infinite alternate;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes textGlow {
+            0% {
+                text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.5);
+            }
+
+            100% {
+                text-shadow: 4px 4px 12px rgba(255, 255, 255, 1);
+            }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: fall 1.5s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(800px);
+                opacity: 0;
+            }
+        }
+
+        @media (orientation: portrait) {
+            .title {
+                font-size: 15vw;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background">
+        <img src="yo.jpeg" alt="Background 1" class="bg-img">
+        <img src="agus.jpeg" alt="Background 2" class="bg-img">
+        <img src="ander.jpeg" alt="Background 3" class="bg-img">
+        <img src="angel.jpeg" alt="Background 4" class="bg-img">
+        <img src="ostos.jpeg" alt="Background 5" class="bg-img">
+        <img src="nico.jpeg" alt="Background 6" class="bg-img">
+        <img src="lucas.jpeg" alt="Background 7" class="bg-img">
+    </div>
+
+    <div class="title">BASTARDOS</div>
+
+    <script>
+        let touches = {};
+        let selectionTimeout;
+        const bgImages = document.querySelectorAll('.bg-img');
+        let lastImageIndex = -1;
+        let winnerSelected = false; // Para controlar si ya se ha seleccionado un ganador
+
+        function changeBackgroundImages() {
+            bgImages.forEach(img => img.style.opacity = 0);
+
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * bgImages.length);
+            } while (randomIndex === lastImageIndex);
+
+            lastImageIndex = randomIndex;
+            bgImages[randomIndex].style.opacity = 1;
+        }
+
+        changeBackgroundImages();
+        setInterval(changeBackgroundImages, 4000);
+
+        function createConfetti(x, y) {
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement("div");
+                confetti.classList.add("confetti");
+                confetti.style.left = `${x + (Math.random() * 80 - 40)}px`;
+                confetti.style.top = `${y + (Math.random() * 80 - 40)}px`;
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 1500);
+            }
+        }
+
+        function getRandomColor() {
+            return `hsl(${Math.random() * 360}, 100%, 50%)`;
+        }
+
+        document.addEventListener("touchstart", (event) => {
+            clearTimeout(selectionTimeout);
+            if (winnerSelected) return; // Si ya se ha seleccionado un ganador, no hacer nada más
+
+            for (const touch of event.touches) {
+                if (!document.getElementById(`touch-${touch.identifier}`)) {
+                    const touchCircle = document.createElement("div");
+                    touchCircle.classList.add("touch-circle");
+                    touchCircle.style.left = `${touch.pageX - 40}px`;
+                    touchCircle.style.top = `${touch.pageY - 40}px`;
+                    touchCircle.id = `touch-${touch.identifier}`;
+                    touchCircle.style.borderColor = getRandomColor();
+                    document.body.appendChild(touchCircle);
+                    touches[touch.identifier] = touchCircle;
+                }
+            }
+
+            // Reiniciar el temporizador de selección cada vez que se añade un dedo
+            if (Object.keys(touches).length >= 2) {
+                selectionTimeout = setTimeout(selectRandomTouch, 5000);
+            }
+        });
+
+        document.addEventListener("touchmove", (event) => {
+            for (const touch of event.touches) {
+                const touchCircle = touches[touch.identifier];
+                if (touchCircle) {
+                    touchCircle.style.left = `${touch.pageX - 40}px`;
+                    touchCircle.style.top = `${touch.pageY - 40}px`;
+                    touchCircle.style.borderColor = getRandomColor();
+                }
+            }
+        });
+
+        document.addEventListener("touchend", (event) => {
+            for (const touch of event.changedTouches) {
+                const touchCircle = touches[touch.identifier];
+                if (touchCircle) {
+                    touchCircle.remove();
+                    delete touches[touch.identifier];
+                }
+            }
+            if (Object.keys(touches).length === 0) {
+                clearTimeout(selectionTimeout);
+                winnerSelected = false; // Reiniciar el estado del ganador
+            }
+        });
+
+        function selectRandomTouch() {
+            const keys = Object.keys(touches);
+            if (keys.length >= 2) {
+                const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                const circle = touches[randomKey];
+                const rect = circle.getBoundingClientRect();
+                createConfetti(rect.x + rect.width / 2, rect.y + rect.height / 2);
+                // Mantener el círculo ganador visible
+                circle.style.zIndex = 10; // Llevarlo al frente
+
+                // Hacer que los demás círculos desaparezcan
+                keys.forEach(key => {
+                    if (key !== randomKey) {
+                        touches[key].remove();
+                        delete touches[key];
+                    }
+                });
+
+                selectionTimeout = null; // Reiniciar el timeout
+                winnerSelected = true; // Marcar que ya se ha seleccionado un ganador
+            }
+        }
+    </script>
+</body>
+
+</html>

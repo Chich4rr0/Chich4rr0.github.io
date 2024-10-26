@@ -62,12 +62,11 @@
             font-size: 10vw;
             color: #ffffff;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3), 4px 4px 8px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 2s ease forwards, textGlow 3s ease infinite alternate, textScaleRotate 5s ease-in-out infinite;
+            animation: fadeIn 2s ease forwards, textGlow 3s ease infinite alternate, textBounce 1.5s ease-in-out infinite;
             pointer-events: none;
             text-align: center;
         }
 
-        /* Animación para el texto */
         @keyframes fadeIn {
             0% { opacity: 0; transform: translateY(-50px); }
             100% { opacity: 1; transform: translateY(0); }
@@ -78,9 +77,10 @@
             100% { text-shadow: 4px 4px 12px rgba(255, 255, 255, 1); }
         }
 
-        @keyframes textScaleRotate {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(5deg); }
+        @keyframes textBounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
         }
 
         .confetti {
@@ -126,6 +126,7 @@
         const bgImages = document.querySelectorAll('.bg-img');
         let lastImageIndex = -1;
         let winnerSelected = false;
+        let canAddTouch = true; // Controla si se puede añadir un nuevo toque
 
         function changeBackgroundImages() {
             bgImages.forEach(img => img.style.opacity = 0);
@@ -158,7 +159,7 @@
 
         document.addEventListener("touchstart", (event) => {
             clearTimeout(selectionTimeout);
-            if (winnerSelected) return;
+            if (winnerSelected || !canAddTouch) return; // No permitir añadir más toques si ya se seleccionó un ganador o si no se puede añadir
 
             for (const touch of event.touches) {
                 if (!document.getElementById(`touch-${touch.identifier}`)) {
@@ -172,6 +173,9 @@
                     touches[touch.identifier] = touchCircle;
                 }
             }
+
+            canAddTouch = false; // Desactivar la capacidad de añadir nuevos toques
+            setTimeout(() => canAddTouch = true, 500); // Volver a activar después de 0.5 segundos
 
             if (Object.keys(touches).length >= 2) {
                 selectionTimeout = setTimeout(selectRandomTouch, 5000);

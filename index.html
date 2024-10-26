@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -151,7 +150,7 @@
         let selectionTimeout;
         const bgImages = document.querySelectorAll('.bg-img');
         let lastImageIndex = -1;
-        let winnerSelected = false; // Para controlar si ya se ha seleccionado un ganador
+        let winnerSelected = false;
 
         function changeBackgroundImages() {
             bgImages.forEach(img => img.style.opacity = 0);
@@ -186,7 +185,7 @@
 
         document.addEventListener("touchstart", (event) => {
             clearTimeout(selectionTimeout);
-            if (winnerSelected) return; // Si ya se ha seleccionado un ganador, no hacer nada más
+            if (winnerSelected) return;
 
             for (const touch of event.touches) {
                 if (!document.getElementById(`touch-${touch.identifier}`)) {
@@ -201,7 +200,6 @@
                 }
             }
 
-            // Reiniciar el temporizador de selección cada vez que se añade un dedo
             if (Object.keys(touches).length >= 2) {
                 selectionTimeout = setTimeout(selectRandomTouch, 5000);
             }
@@ -226,9 +224,13 @@
                     delete touches[touch.identifier];
                 }
             }
+
+            // Si no quedan dedos, eliminar cualquier círculo restante
             if (Object.keys(touches).length === 0) {
+                const floatingCircles = document.querySelectorAll(".touch-circle");
+                floatingCircles.forEach(circle => circle.remove());
                 clearTimeout(selectionTimeout);
-                winnerSelected = false; // Reiniciar el estado del ganador
+                winnerSelected = false;
             }
         });
 
@@ -239,10 +241,9 @@
                 const circle = touches[randomKey];
                 const rect = circle.getBoundingClientRect();
                 createConfetti(rect.x + rect.width / 2, rect.y + rect.height / 2);
-                // Mantener el círculo ganador visible
-                circle.style.zIndex = 10; // Llevarlo al frente
 
-                // Hacer que los demás círculos desaparezcan
+                circle.style.zIndex = 10;
+
                 keys.forEach(key => {
                     if (key !== randomKey) {
                         touches[key].remove();
@@ -250,11 +251,10 @@
                     }
                 });
 
-                selectionTimeout = null; // Reiniciar el timeout
-                winnerSelected = true; // Marcar que ya se ha seleccionado un ganador
+                selectionTimeout = null;
+                winnerSelected = true;
             }
         }
     </script>
 </body>
-
 </html>
